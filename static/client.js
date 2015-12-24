@@ -2,8 +2,12 @@ $(function(){
   function payload(target, value){
     return JSON.stringify({
       "target": target,
-      "value": value
+      "rgb": value
     })
+  }
+
+  function addLogger(msg){
+      $('#lstMsg').html( $('#lstMsg').html() + '<br />' + msg );
   }
 
   var ws = undefined;
@@ -26,7 +30,36 @@ $(function(){
   connect();
 
 
+  var wsConsumer = undefined;
+  function connectConsumer(){
+    wsConsumer = new WebSocket('ws://localhost:8888/consumer');
+    wsConsumer.onmessage = function(data){
+      var obj = JSON.parse(data.data);
+      $('body').css('background-color', obj.target);
+      addLogger(data.data);
+    }
+
+    wsConsumer.onerror = function(error){
+      console.log(error);
+    }
+    wsConsumer.onclose = function(msg){
+      console.log('WebSocket Closed');
+      connectConsumer();
+    }
+  }
+  connectConsumer();
+
   $(".chsend").click(function(){
     ws.send(payload($(this).val(), 2));
+  });
+
+  $('#colorPicker').ColorPicker({
+      flat: true,
+      onChange: function(hsb, hex, rgb){
+          //addLogger('HSB: '+hsb);
+          //addLogger('HEX: '+hex);
+          //addLogger('RGB: '+rgb);
+          ws.send(payload('#'+hex, rgb));
+      }
   });
 });

@@ -11,9 +11,8 @@ $(function(){
     ws = new WebSocket('ws://localhost:8888/consumer');
     ws.onmessage = function(data){
       var obj = JSON.parse(data.data);
-      console.log(data);
-      console.log(obj);
       $('body').css('background-color', obj.target);
+      $('#lstMsg').html( $('#lstMsg').html() + '<br />' + data.data );
     }
 
     ws.onerror = function(error){
@@ -21,7 +20,7 @@ $(function(){
     }
     ws.onclose = function(msg){
       console.log('WebSocket Closed');
-      connect();
+      //connect();
     }
   }
   connect();

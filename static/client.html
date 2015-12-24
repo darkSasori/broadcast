@@ -1,16 +1,16 @@
 <html>
   <head>
-    <title>Broadcast :: Client</title>
+    <title>Broadcast</title>
+    <link rel="stylesheet" media="screen" type="text/css" href="/static/css/colorpicker.css" />
     <script src='/static/jquery.min.js'></script>
+    <script src="/static/js/colorpicker.js"></script>
     <script src='/static/client.js'></script>
   </head>
   <body>
-    <h1>Broadcast :: Client</h1>
+    <h1>Broadcast</h1>
 
-    <ul>
-      <li style='background-color: #FF0000;'><button value='#FF0000' class='chsend'>RED</button></li>
-      <li style='background-color: #00FF00;'><button class='chsend' id='green' value='#00FF00' /> GREEN</button></li>
-      <li style='background-color: #0000FF;'><button class='chsend' id='blue' value='#0000FF' /> BLUE</button></li>
-    </ul>
+    <p id='colorPicker'></p>
+
+    <div id='lstMsg'></div>
   </body>
 </html>
