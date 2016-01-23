@@ -12,7 +12,7 @@ $(function(){
 
   var ws = undefined;
   function connect(){
-    ws = new WebSocket('ws://localhost:8888/client');
+    ws = new WebSocket('ws://192.168.0.9:8888/client');
     ws.onmessage = function(data){
       var obj = JSON.parse(data.data);
       console.log(data);
@@ -32,7 +32,7 @@ $(function(){
 
   var wsConsumer = undefined;
   function connectConsumer(){
-    wsConsumer = new WebSocket('ws://localhost:8888/consumer');
+    wsConsumer = new WebSocket('ws://192.168.0.9:8888/consumer');
     wsConsumer.onmessage = function(data){
       var obj = JSON.parse(data.data);
       $('body').css('background-color', obj.target);
