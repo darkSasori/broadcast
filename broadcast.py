@@ -1,4 +1,5 @@
-import queue, json, time, arduino
+import queue, json, time, threading
+#import arduino
 
 class Singleton(type):
     _instances = {}
@@ -7,51 +8,68 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*arg, **kargs)
         return cls._instances[cls]
 
-def workerConsumer():
-    qmsg = QueueManager()
-    sockets = SocketManager()
-    print("Start Thread")
+#def workerConsumer(queueName):
+class ConsumerThread(threading.Thread):
+    def __init__(self, queueName):
+        threading.Thread.__init__(self)
+        self.queue = queueName
 
-    while True:
-        consumers = sockets.getConsumers()
-        if len(consumers) > 0:
-            msg = qmsg.get()
-            if msg is None:
-                break
-            logger()
-            for c in consumers:
-                c.write_message(msg)
-            arduino.sendRGB(msg['rgb'])
+    def run(self):
+        qmsg = QueueManager()
+        sockets = SocketManager()
+        print("Start Thread")
 
-    print("End Thread")
+        while True:
+            consumers = sockets.getConsumers(self.queue)
+            if len(consumers) > 0:
+                msg = qmsg.get(self.queue)
+                if msg is None:
+                    continue
+
+                for c in consumers:
+                    c.write_message(msg)
+                    logger()
+                #arduino.sendRGB(msg['rgb'])
+
+        print("End Thread")
 
 def logger():
     sockets = SocketManager()
     qmsg = QueueManager()
-    #print("LOGGER")
-    print("Clients: %d\tConsumers: %d\tMessages: %d" % (len(sockets.getClients()), len(sockets.getConsumers()), qmsg.qsize()))
+    print("Clients: %d\tQueues: %d\t" % (len(sockets.getClients()), len(sockets.getAllConsumers())))
 
 class QueueManager(metaclass=Singleton):
-    qMessage = queue.Queue()
+    queues = {}
+    threads = {}
 
-    def add(self, message):
-        sockets = SocketManager()
+    def add(self, obj):
         try:
-            obj = json.loads(message)
-            self.qMessage.put(obj)
+            queueName = obj['queue']
+            try:
+                self.queues[queueName].put(obj)
+            except KeyError:
+                self.queues[queueName] = queue.Queue()
+                self.queues[queueName].put(obj)
+                self.threads[queueName] = ConsumerThread(queueName)
+                self.threads[queueName].start()
+
+            #self.qMessage.put(obj)
             logger()
         except Exception as err:
             print("Error: %s" % err)
 
-    def get(self):
-        return self.qMessage.get()
-
-    def qsize(self):
-        return self.qMessage.qsize()
+    def get(self, queueName):
+        try:
+            obj = self.queues[queueName].get()
+            return obj
+        except Exception as err:
+            print(type(msg))
+            print(err)
+            return {'queue': 'fail', 'content': str(err), 'msg': msg}
 
 class SocketManager(metaclass=Singleton):
     clients = []
-    consumers = []
+    consumers = {}
     queue = QueueManager()
 
     def addClient(self, client):
@@ -60,18 +78,31 @@ class SocketManager(metaclass=Singleton):
     def rmClient(self, client):
         self.clients.remove(client)
 
-    def addConsumer(self, consumer):
-        self.consumers.append(consumer)
+    def addConsumer(self, consumer, queue):
+        try:
+            self.consumers[queue].append(consumer)
+        except:
+            self.consumers[queue] = []
+            self.consumers[queue].append(consumer)
 
-    def rmConsumer(self, consumer):
-        self.consumers.remove(consumer)
+    def rmConsumer(self, consumer, queue):
+        try:
+            self.consumers[queue].remove(consumer)
+        except Exception as err:
+            print("Error: %s" % str(err))
 
-    def getConsumers(self):
+    def getConsumers(self, queue):
+        try:
+            return self.consumers[queue]
+        except Exception as err:
+            print("Error: %s" % str(err))
+
+    def getAllConsumers(self):
         return self.consumers
 
     def getClients(self):
         return self.clients
 
     def addMessage(self, message):
-        self.queue.add(message)
-
+        obj = json.loads(message)
+        self.queue.add(obj)

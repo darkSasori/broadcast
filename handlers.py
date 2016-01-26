@@ -30,8 +30,14 @@ class Client(WebSocket):
         self.socketManager.rmClient(self)
 
 class Consumer(WebSocket):
+    queue = None
+
+    def open(self, queue):
+        self.queue = queue
+        WebSocket.open(self)
+
     def add(self):
-        self.socketManager.addConsumer(self)
+        self.socketManager.addConsumer(self, self.queue)
 
     def remove(self):
-        self.socketManager.rmConsumer(self)
+        self.socketManager.rmConsumer(self, self.queue)

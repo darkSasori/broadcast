@@ -3,7 +3,6 @@ import tornado.ioloop
 import tornado.web
 from wsgiref.simple_server import make_server
 from handlers import Client, Consumer
-from broadcast import workerConsumer
 
 settings = dict(
     static_path=os.path.join(os.getcwd(), 'static'),
@@ -11,12 +10,9 @@ settings = dict(
     debug=True,
 )
 
-t = threading.Thread(target=workerConsumer)
-t.start()
-
 handlers = [
     (r"/client", Client),
-    (r"/consumer", Consumer),
+    (r"/consumer/(\w+)", Consumer),
 ]
 
 application = tornado.web.Application(handlers, **settings)

@@ -1,10 +1,11 @@
 $(function(){
-  function payload(target, value){
-    return JSON.stringify({
-      "target": target,
-      "rgb": value
-    })
-  }
+    function payload(target, value){
+        return JSON.stringify({
+            "target": target,
+            "rgb": value,
+            "queue": "color"
+        })
+    }
 
   function addLogger(msg){
       $('#lstMsg').html( $('#lstMsg').html() + '<br />' + msg );
@@ -32,7 +33,7 @@ $(function(){
 
   var wsConsumer = undefined;
   function connectConsumer(){
-    wsConsumer = new WebSocket('ws://192.168.0.9:8888/consumer');
+    wsConsumer = new WebSocket('ws://192.168.0.9:8888/consumer/color');
     wsConsumer.onmessage = function(data){
       var obj = JSON.parse(data.data);
       $('body').css('background-color', obj.target);
