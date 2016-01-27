@@ -1,5 +1,19 @@
-import serial, threading, time, binascii
-ser = serial.Serial('/dev/ttyACM0')
+import serial, threading, time, binascii, json
+from ws4py.client.threadedclient import WebSocketClient
+
+ser = serial.Serial('/dev/ttyACM1')
+
+class ClientWS(WebSocketClient):
+    def opened(self):
+        print('Connected')
+
+    def closed(self, code, reason):
+        print('Closed [%d] %s' %(code, reason))
+
+    def received_message(self, msg):
+        msg = str(msg)
+        obj = json.loads(msg)
+        sendRGB(obj['rgb'])
 
 def worker():
     while True:
@@ -20,10 +34,10 @@ t = threading.Thread(target=worker)
 t.start()
 
 if __name__ == '__main__':
-    print("Serial")
-    time.sleep(5)
-    sendBinary('r255;')
-    time.sleep(5)
-    ser.write(b'r')
-    ser.write(b'0')
-    ser.write(b';')
+    print("Arduino Serial WebSocket Client")
+    try:
+        ws = ClientWS('ws://192.168.0.9:8888/consumer/color')
+        ws.connect()
+    except:
+        print('tchau')
+        ws.close()

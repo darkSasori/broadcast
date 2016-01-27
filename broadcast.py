@@ -1,5 +1,4 @@
 import queue, json, time, threading
-#import arduino
 
 class Singleton(type):
     _instances = {}
@@ -8,7 +7,6 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*arg, **kargs)
         return cls._instances[cls]
 
-#def workerConsumer(queueName):
 class ConsumerThread(threading.Thread):
     def __init__(self, queueName):
         threading.Thread.__init__(self)
@@ -29,7 +27,6 @@ class ConsumerThread(threading.Thread):
                 for c in consumers:
                     c.write_message(msg)
                     logger()
-                #arduino.sendRGB(msg['rgb'])
 
         print("End Thread")
 

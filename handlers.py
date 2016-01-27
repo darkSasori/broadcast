@@ -4,6 +4,10 @@ from broadcast import SocketManager, logger
 class WebSocket(tornado.websocket.WebSocketHandler):
     socketManager = None
 
+    def check_origin(self, origin):
+        print(origin)
+        return True
+
     def add(self):
         pass
 
