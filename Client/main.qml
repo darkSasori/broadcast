@@ -1,6 +1,8 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.2
+//import Qt.WebSockets 1.0
+import "WebSocket.js" 1.0 as WebSocketBroadcast
 
 ApplicationWindow {
     visible: true
@@ -12,10 +14,6 @@ ApplicationWindow {
         Menu {
             title: qsTr("File")
             MenuItem {
-                text: qsTr("&Open")
-                onTriggered: console.log("Open action triggered");
-            }
-            MenuItem {
                 text: qsTr("Exit")
                 onTriggered: Qt.quit();
             }
@@ -24,13 +22,29 @@ ApplicationWindow {
 
     MainForm {
         anchors.fill: parent
-        button1.onClicked: messageDialog.show(qsTr("Button 1 pressed"))
-        button2.onClicked: messageDialog.show(qsTr("Button 2 pressed"))
+        btnRED.onCheckedChanged:
+            if( btnRED.checked )
+                ws.sendTextMessage("{\"target\": \"r\", \"queue\": \"color\", \"value\": 255}");
+            else
+                ws.sendTextMessage("{\"target\": \"r\", \"queue\": \"color\", \"value\": 0}");
+
+        btnGREEN.onCheckedChanged:
+            if( btnGREEN.checked )
+                ws.sendTextMessage("{\"target\": \"g\", \"queue\": \"color\", \"value\": 255}");
+            else
+                ws.sendTextMessage("{\"target\": \"g\", \"queue\": \"color\", \"value\": 0}");
+
+        btnBLUE.onCheckedChanged:
+            if( btnBLUE.checked )
+                ws.sendTextMessage("{\"target\": \"b\", \"queue\": \"color\", \"value\": 255}");
+            else
+                ws.sendTextMessage("{\"target\": \"b\", \"queue\": \"color\", \"value\": 0}");
+
     }
 
     MessageDialog {
         id: messageDialog
-        title: qsTr("May I have your attention, please?")
+        title: qsTr("WebSocket")
 
         function show(caption) {
             messageDialog.text = caption;

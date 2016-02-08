@@ -20,7 +20,7 @@ class WebSocket(tornado.websocket.WebSocketHandler):
         logger()
 
     def on_message(self, message):
-        self.socketManager.addMessage(message)
+        self.socketManager.addMessage(self, message)
 
     def on_close(self):
         self.remove()

@@ -2,14 +2,23 @@
   <head>
     <title>Broadcast</title>
     <link rel="stylesheet" media="screen" type="text/css" href="/static/css/colorpicker.css" />
-    <script src='/static/jquery.min.js'></script>
-    <script src="/static/js/colorpicker.js"></script>
     <script src='/static/client.js'></script>
   </head>
-  <body>
+  <body onload='ready()'>
     <h1>Broadcast</h1>
 
-    <p id='colorPicker'></p>
+    <label>
+        <input type='checkbox' onclick='changeStatu(this, "r")' />
+        RED
+    </label>
+    <label>
+        <input type='checkbox' onclick='changeStatu(this, "g")' />
+        GREEN
+    </label>
+    <label>
+        <input type='checkbox' onclick='changeStatu(this, "b")' />
+        BLUE
+    </label>
 
     <div id='lstMsg'></div>
   </body>

@@ -6,20 +6,26 @@ Item {
     width: 640
     height: 480
 
-    property alias button1: button1
-    property alias button2: button2
+    property alias btnRED: btnRED
+    property alias btnGREEN: btnGREEN
+    property alias btnBLUE: btnBLUE
 
     RowLayout {
         anchors.centerIn: parent
 
-        Button {
-            id: button1
-            text: qsTr("Press Me 1")
+        RadioButton {
+            id: btnRED
+            text: qsTr("RED")
         }
 
-        Button {
-            id: button2
-            text: qsTr("Press Me 2")
+        RadioButton {
+            id: btnGREEN
+            text: qsTr("GREEN")
+        }
+
+        RadioButton {
+            id: btnBLUE
+            text: qsTr("BLUE")
         }
     }
 }

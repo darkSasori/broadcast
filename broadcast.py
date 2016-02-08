@@ -26,14 +26,20 @@ class ConsumerThread(threading.Thread):
 
                 for c in consumers:
                     c.write_message(msg)
-                    logger()
+                logger()
 
         print("End Thread")
 
 def logger():
     sockets = SocketManager()
     qmsg = QueueManager()
-    print("Clients: %d\tQueues: %d\t" % (len(sockets.getClients()), len(sockets.getAllConsumers())))
+    queues = qmsg.getAll()
+    print("---"*10)
+    print("Clients: %d\tQueues: %d\t" % (len(sockets.getClients()), len(queues)))
+
+    for k in queues:
+        print("Queue: %s" % k)
+        print("\tConsumers: %d\tMessages: %d" %(len(sockets.getConsumers(k)), qmsg.getQueue(k).qsize()))
 
 class QueueManager(metaclass=Singleton):
     queues = {}
@@ -50,7 +56,6 @@ class QueueManager(metaclass=Singleton):
                 self.threads[queueName] = ConsumerThread(queueName)
                 self.threads[queueName].start()
 
-            #self.qMessage.put(obj)
             logger()
         except Exception as err:
             print("Error: %s" % err)
@@ -60,9 +65,14 @@ class QueueManager(metaclass=Singleton):
             obj = self.queues[queueName].get()
             return obj
         except Exception as err:
-            print(type(msg))
             print(err)
             return {'queue': 'fail', 'content': str(err), 'msg': msg}
+
+    def getAll(self):
+        return self.queues
+
+    def getQueue(self, queue):
+        return self.queues[queue]
 
 class SocketManager(metaclass=Singleton):
     clients = []
@@ -71,9 +81,11 @@ class SocketManager(metaclass=Singleton):
 
     def addClient(self, client):
         self.clients.append(client)
+        logger()
 
     def rmClient(self, client):
         self.clients.remove(client)
+        logger()
 
     def addConsumer(self, consumer, queue):
         try:
@@ -81,18 +93,20 @@ class SocketManager(metaclass=Singleton):
         except:
             self.consumers[queue] = []
             self.consumers[queue].append(consumer)
+        logger()
 
     def rmConsumer(self, consumer, queue):
         try:
             self.consumers[queue].remove(consumer)
         except Exception as err:
             print("Error: %s" % str(err))
+        logger()
 
     def getConsumers(self, queue):
         try:
             return self.consumers[queue]
         except Exception as err:
-            print("Error: %s" % str(err))
+            return []
 
     def getAllConsumers(self):
         return self.consumers
@@ -100,6 +114,17 @@ class SocketManager(metaclass=Singleton):
     def getClients(self):
         return self.clients
 
-    def addMessage(self, message):
-        obj = json.loads(message)
-        self.queue.add(obj)
+    def addMessage(self, ws, message):
+        try:
+            obj = json.loads(message)
+            try:
+                newQueue = obj['change_queue']
+                self.rmConsumer(ws, ws.queue)
+                ws.queue = newQueue
+                self.addConsumer(ws, ws.queue)
+                ws.write_message({"message": "changed queue"})
+            except:
+                self.queue.add(obj)
+        except Exception as err:
+            ws.write_message({"error": str(err)})
+            print(err)

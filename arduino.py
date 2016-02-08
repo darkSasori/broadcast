@@ -1,7 +1,7 @@
 import serial, threading, time, binascii, json
 from ws4py.client.threadedclient import WebSocketClient
 
-ser = serial.Serial('/dev/ttyACM1')
+ser = serial.Serial('/dev/ttyACM0')
 
 class ClientWS(WebSocketClient):
     def opened(self):
@@ -13,7 +13,7 @@ class ClientWS(WebSocketClient):
     def received_message(self, msg):
         msg = str(msg)
         obj = json.loads(msg)
-        sendRGB(obj['rgb'])
+        sendRGB(obj)
 
 def worker():
     while True:
@@ -24,10 +24,10 @@ def sendBinary(value):
     print("Sending %s" %value)
     for i in value:
         ser.write(binascii.a2b_qp(i))
-    #ser.write(struct.pack(text))
 
 def sendRGB(data):
-    msg = "r%s;g%s;b%s;" %(data['r'],data['g'],data['b'])
+    msg = "%s%s;" %(data['target'],data['value'])
+    print(msg)
     sendBinary(msg)
 
 t = threading.Thread(target=worker)
